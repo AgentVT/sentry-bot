@@ -1,0 +1,26 @@
+{
+    "pir_pin": 27,
+    "led_pin": 17,
+    "sounds": {
+        "power_on": "/home/domin/JARVIS/sounds/powerup1.mp3",
+        "unauthorized": [
+            "/home/domin/JARVIS/sounds/unauthorized.mp3",
+            "/home/domin/JARVIS/sounds/Unauthorized1.mp3",
+            "/home/domin/JARVIS/sounds/Unauthorized2.mp3",
+            "/home/domin/JARVIS/sounds/Unauthorized3.mp3"
+        ],
+        "warning": [
+            "/home/domin/JARVIS/sounds/2ndrequest.mp3",
+            "/home/domin/JARVIS/sounds/2ndrequest1.mp3",
+            "/home/domin/JARVIS/sounds/alert1.mp3",
+            "/home/domin/JARVIS/sounds/Alert2.mp3",
+            "/home/domin/JARVIS/sounds/alert3.mp3",
+            "/home/domin/JARVIS/sounds/DrEtli.mp3"
+        ],
+        "alarm": "/home/domin/JARVIS/sounds/alarm.mp3",
+        "power_down": "/home/domin/JARVIS/sounds/powerdown.mp3"
+    },
+    "unauthorized_pause": [0.5, 1],
+    "warning_delay": 3,
+    "alarm_delay": 5
+}
