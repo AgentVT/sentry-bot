@@ -1,6 +1,12 @@
 {
     "pir_pin": 27,
+    "led_type": "single",
     "led_pin": 17,
+    "red_pin": 17,
+    "green_pin": 22,
+    "blue_pin": 24,
+    "pwm_frequency": 100,
+    "voice_enabled": false,
     "sounds": {
         "power_on": "/home/domin/JARVIS/sounds/powerup1.mp3",
         "unauthorized": [
@@ -22,5 +28,10 @@
     },
     "unauthorized_pause": [0.5, 1],
     "warning_delay": 3,
-    "alarm_delay": 5
+    "alarm_delay": 5,
+    "web_server": {
+        "enabled": true,
+        "host": "0.0.0.0",
+        "port": 5000
+    }
 }

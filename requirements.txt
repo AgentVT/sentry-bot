@@ -1,0 +1,26 @@
+# SentryBot - Raspberry Pi 5 Intrusion Detection System
+# Python dependencies
+
+# GPIO Control for Raspberry Pi
+RPi.GPIO>=0.7.1
+
+# Audio playback
+pygame>=2.5.0
+
+# MP3 metadata reading (for audio duration)
+mutagen>=1.47.0
+
+# Voice recognition (optional feature)
+SpeechRecognition>=3.10.0
+
+# Web interface
+Flask>=3.0.0
+Flask-CORS>=4.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+
+# Code quality
+flake8>=6.1.0
