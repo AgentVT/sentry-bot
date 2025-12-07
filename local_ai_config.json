@@ -58,6 +58,22 @@
         "speed": 1.0,
         "output_dir": "tts_cache",
         "cache_enabled": true,
+
+        "custom_voice": {
+            "enabled": false,
+            "engine": "xtts",
+            "voice_id": "jarvis",
+            "voices_dir": "voices",
+            "sample_paths": ["voices/samples/jarvis_sample.wav"]
+        },
+
+        "available_piper_voices": [
+            "en_US-lessac-medium",
+            "en_US-ryan-medium",
+            "en_US-amy-medium",
+            "en_GB-alan-medium",
+            "en_GB-jenny_dioco-medium"
+        ],
         "dynamic_responses": {
             "person_detected": [
                 "Human presence detected in the monitored area.",

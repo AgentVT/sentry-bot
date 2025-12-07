@@ -37,3 +37,8 @@ dlib>=19.24.0
 requests>=2.28.0
 # Note: Ollama itself is installed separately via setup_ai.sh
 # Recommended models for Pi 5: phi3:mini, llama3.2:1b, gemma2:2b
+
+# Custom Voice Cloning (Coqui XTTS)
+# Note: Large download (~2GB), use for voice cloning only
+# TTS>=0.22.0  # Uncomment for voice cloning: pip3 install TTS
+# Requires: sudo apt install espeak-ng libsndfile1
