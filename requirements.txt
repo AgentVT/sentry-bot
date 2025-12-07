@@ -1,0 +1,34 @@
+# Sentry-Bot AI Requirements
+# ==========================
+# Install with: pip3 install -r requirements.txt
+#
+# Note: Some packages require system dependencies.
+# Run ./setup_ai.sh first for full installation.
+
+# Core dependencies
+numpy>=1.21.0
+pygame>=2.1.0
+mutagen>=1.45.0
+
+# GPIO (Raspberry Pi only)
+# RPi.GPIO>=0.7.0  # Uncomment on Raspberry Pi
+
+# Computer Vision
+opencv-python-headless>=4.5.0
+# picamera2  # Uncomment on Raspberry Pi 5
+
+# TensorFlow Lite (for object detection)
+# tflite-runtime>=2.10.0  # Uncomment on Raspberry Pi (use pip3 install tflite-runtime)
+
+# Voice Recognition (Vosk - offline)
+vosk>=0.3.42
+pyaudio>=0.2.12
+
+# Text-to-Speech (Piper - offline)
+piper-tts>=1.2.0
+
+# Face Recognition
+# Note: Requires cmake, libopenblas-dev, liblapack-dev
+# Takes 10-20 minutes to compile on Raspberry Pi
+face_recognition>=1.3.0
+dlib>=19.24.0

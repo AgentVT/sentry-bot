@@ -1,0 +1,114 @@
+{
+    "ai_enabled": true,
+
+    "vision": {
+        "enabled": true,
+        "camera_index": 0,
+        "resolution": [640, 480],
+        "fps": 30,
+        "model": "mobilenet_ssd",
+        "model_path": "models/detect.tflite",
+        "labels_path": "models/labelmap.txt",
+        "confidence_threshold": 0.5,
+        "detection_classes": {
+            "person": {"alert_level": "high", "bypass_if_authorized": true},
+            "cat": {"alert_level": "ignore", "bypass_if_authorized": false},
+            "dog": {"alert_level": "ignore", "bypass_if_authorized": false},
+            "bird": {"alert_level": "ignore", "bypass_if_authorized": false},
+            "car": {"alert_level": "medium", "bypass_if_authorized": false},
+            "truck": {"alert_level": "medium", "bypass_if_authorized": false}
+        },
+        "unknown_motion_alert_level": "low"
+    },
+
+    "face_recognition": {
+        "enabled": true,
+        "authorized_faces_dir": "authorized_faces",
+        "recognition_threshold": 0.6,
+        "enrollment_mode": false,
+        "announce_recognized": true,
+        "unknown_face_captures_dir": "captured_faces"
+    },
+
+    "voice_recognition": {
+        "enabled": true,
+        "engine": "vosk",
+        "model_path": "models/vosk-model-small-en-us",
+        "sample_rate": 16000,
+        "wake_words": ["sentry", "jarvis", "hey sentry"],
+        "commands": {
+            "enable sentry": "activate",
+            "disable sentry": "deactivate",
+            "arm system": "activate",
+            "disarm system": "deactivate",
+            "status report": "status",
+            "who is there": "identify",
+            "add face": "enroll_face",
+            "stop alarm": "silence"
+        },
+        "listen_continuously": true,
+        "command_timeout": 5
+    },
+
+    "text_to_speech": {
+        "enabled": true,
+        "engine": "piper",
+        "model_path": "models/en_US-lessac-medium.onnx",
+        "voice_config": "models/en_US-lessac-medium.onnx.json",
+        "speed": 1.0,
+        "output_dir": "tts_cache",
+        "cache_enabled": true,
+        "dynamic_responses": {
+            "person_detected": [
+                "Human presence detected in the monitored area.",
+                "I've detected a person in the vicinity.",
+                "Alert: Unidentified individual detected."
+            ],
+            "authorized_person": [
+                "Welcome back, {name}. Sentry mode suspended.",
+                "Hello {name}, I've recognized you. Standing down.",
+                "{name} identified. Access granted."
+            ],
+            "unknown_person": [
+                "Warning: Unknown individual detected. Please identify yourself.",
+                "Unrecognized person in the area. Initiating security protocol.",
+                "Alert: Face not in authorized database."
+            ],
+            "pet_detected": [
+                "Motion from a pet detected. No threat identified.",
+                "Just a furry friend passing by. Standing down."
+            ],
+            "system_armed": [
+                "Sentry mode activated. Monitoring all sectors.",
+                "Security system is now armed and monitoring."
+            ],
+            "system_disarmed": [
+                "Sentry mode deactivated. System in standby.",
+                "Security system disarmed. Have a good day."
+            ],
+            "status_report": [
+                "All systems operational. Currently in {state} mode. {detections} detections in the last hour."
+            ]
+        }
+    },
+
+    "smart_alerts": {
+        "enabled": true,
+        "cooldown_seconds": 30,
+        "learning_enabled": true,
+        "activity_log_path": "activity_log.json",
+        "quiet_hours": {
+            "enabled": false,
+            "start": "23:00",
+            "end": "07:00",
+            "alert_level_threshold": "high"
+        }
+    },
+
+    "hardware": {
+        "pi_model": "raspberry_pi_5",
+        "use_gpu_acceleration": true,
+        "max_cpu_threads": 4,
+        "memory_limit_mb": 1024
+    }
+}
