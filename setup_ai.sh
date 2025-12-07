@@ -5,7 +5,7 @@
 # Downloads and installs all required AI models and dependencies
 # for 100% local, offline operation.
 #
-# Usage: ./setup_ai.sh [--full|--minimal|--models-only]
+# Usage: ./setup_ai.sh [--full|--minimal|--models-only|--llm-only]
 #
 
 set -e
@@ -29,6 +29,10 @@ TFLITE_MODEL_URL="https://storage.googleapis.com/download.tensorflow.org/models/
 VOSK_MODEL_URL="https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
 PIPER_VOICE_URL="https://github.com/rhasspy/piper/releases/download/v1.2.0/voice-en_US-lessac-medium.tar.gz"
 
+# LLM Configuration
+DEFAULT_LLM_MODEL="phi3:mini"  # Best balance for Pi 5
+FALLBACK_LLM_MODEL="llama3.2:1b"  # Faster, less capable
+
 echo -e "${BLUE}"
 echo "=========================================="
 echo "   Sentry-Bot AI Setup for Raspberry Pi 5"
@@ -41,6 +45,8 @@ if [ "$1" == "--minimal" ]; then
     INSTALL_TYPE="minimal"
 elif [ "$1" == "--models-only" ]; then
     INSTALL_TYPE="models"
+elif [ "$1" == "--llm-only" ]; then
+    INSTALL_TYPE="llm-only"
 fi
 
 echo -e "${YELLOW}Installation type: ${INSTALL_TYPE}${NC}"
@@ -339,6 +345,116 @@ enable_camera() {
     fi
 }
 
+# Function to install Ollama (local LLM runtime)
+install_ollama() {
+    echo -e "${BLUE}Installing Ollama (local LLM runtime)...${NC}"
+
+    # Check if already installed
+    if command -v ollama &> /dev/null; then
+        echo -e "${YELLOW}Ollama is already installed${NC}"
+        ollama --version
+        return 0
+    fi
+
+    # Download and install Ollama
+    echo -e "${YELLOW}Downloading Ollama installer...${NC}"
+    curl -fsSL https://ollama.com/install.sh | sh
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Ollama installed successfully${NC}"
+    else
+        echo -e "${RED}Ollama installation failed${NC}"
+        return 1
+    fi
+}
+
+# Function to setup Ollama service
+setup_ollama_service() {
+    echo -e "${BLUE}Setting up Ollama service...${NC}"
+
+    # Create systemd service for auto-start
+    sudo tee /etc/systemd/system/ollama.service > /dev/null << 'EOF'
+[Unit]
+Description=Ollama Local LLM Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/ollama serve
+Restart=always
+RestartSec=3
+Environment="OLLAMA_HOST=0.0.0.0"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Enable and start service
+    sudo systemctl daemon-reload
+    sudo systemctl enable ollama
+    sudo systemctl start ollama
+
+    # Wait for service to be ready
+    echo -e "${YELLOW}Waiting for Ollama service to start...${NC}"
+    sleep 5
+
+    # Check if running
+    if systemctl is-active --quiet ollama; then
+        echo -e "${GREEN}Ollama service is running${NC}"
+    else
+        echo -e "${RED}Ollama service failed to start${NC}"
+        return 1
+    fi
+}
+
+# Function to download LLM model
+download_llm_model() {
+    local model="${1:-$DEFAULT_LLM_MODEL}"
+    echo -e "${BLUE}Downloading LLM model: ${model}...${NC}"
+    echo -e "${YELLOW}This may take 10-30 minutes depending on your connection${NC}"
+
+    # Check if Ollama is running
+    if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+        echo -e "${YELLOW}Starting Ollama service...${NC}"
+        sudo systemctl start ollama
+        sleep 5
+    fi
+
+    # Pull the model
+    ollama pull "$model"
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Model ${model} downloaded successfully${NC}"
+    else
+        echo -e "${RED}Failed to download model ${model}${NC}"
+        if [ "$model" != "$FALLBACK_LLM_MODEL" ]; then
+            echo -e "${YELLOW}Trying fallback model: ${FALLBACK_LLM_MODEL}${NC}"
+            ollama pull "$FALLBACK_LLM_MODEL"
+        fi
+    fi
+}
+
+# Function to test LLM
+test_llm() {
+    echo -e "${BLUE}Testing LLM...${NC}"
+
+    # Simple test prompt
+    local response=$(curl -s http://localhost:11434/api/generate -d '{
+        "model": "'"$DEFAULT_LLM_MODEL"'",
+        "prompt": "Say hello in exactly 5 words.",
+        "stream": false
+    }' | python3 -c "import sys,json; print(json.load(sys.stdin).get('response','ERROR')[:100])" 2>/dev/null)
+
+    if [ -n "$response" ] && [ "$response" != "ERROR" ]; then
+        echo -e "${GREEN}LLM Test Response: ${response}${NC}"
+        return 0
+    else
+        echo -e "${YELLOW}LLM test inconclusive. Model may still be loading.${NC}"
+        return 1
+    fi
+}
+
 # Function to test installation
 test_installation() {
     echo -e "${BLUE}Testing installation...${NC}"
@@ -443,6 +559,11 @@ main() {
             download_piper_voice
             configure_audio
             enable_camera
+            # Install Ollama and LLM
+            install_ollama
+            setup_ollama_service
+            download_llm_model "$DEFAULT_LLM_MODEL"
+            test_llm
             ;;
         "minimal")
             install_system_deps
@@ -453,6 +574,12 @@ main() {
             download_tflite_model
             download_vosk_model
             download_piper_voice
+            ;;
+        "llm-only")
+            install_ollama
+            setup_ollama_service
+            download_llm_model "$DEFAULT_LLM_MODEL"
+            test_llm
             ;;
     esac
 
@@ -465,16 +592,29 @@ main() {
     echo "   Setup Complete!"
     echo "==========================================${NC}"
     echo ""
-    echo "Next steps:"
-    echo "1. Add photos of authorized people to: ${FACES_DIR}/"
-    echo "2. Test the system: python3 local_ai.py"
-    echo "3. Run the full system: python3 sentry_ai_system.py"
+    echo -e "${BLUE}AI Components Installed:${NC}"
+    echo "  - TensorFlow Lite (Object Detection)"
+    echo "  - Vosk (Voice Recognition)"
+    echo "  - Piper (Text-to-Speech)"
+    echo "  - Ollama + ${DEFAULT_LLM_MODEL} (On-Device LLM)"
     echo ""
-    echo "Voice commands (say 'Sentry' first):"
+    echo -e "${BLUE}Next steps:${NC}"
+    echo "1. Add photos of authorized people to: ${FACES_DIR}/"
+    echo "2. Test the LLM: python3 sentry_brain.py"
+    echo "3. Test all AI: python3 local_ai.py"
+    echo "4. Run the full system: python3 sentry_ai_system.py"
+    echo ""
+    echo -e "${BLUE}Voice commands (say 'Sentry' or 'Jarvis' first):${NC}"
     echo "  - 'Enable sentry' / 'Arm system'"
     echo "  - 'Disable sentry' / 'Disarm system'"
     echo "  - 'Status report'"
+    echo "  - 'Who is there'"
     echo "  - 'Stop alarm'"
+    echo ""
+    echo -e "${BLUE}Ask the AI anything:${NC}"
+    echo "  - 'What was the last detection?'"
+    echo "  - 'How many alerts today?'"
+    echo "  - 'Help me troubleshoot the camera'"
     echo ""
 }
 
