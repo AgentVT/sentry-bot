@@ -1,6 +1,12 @@
 {
     "pir_pin": 27,
     "led_pin": 17,
+    "led_mode": "rgb",
+    "rgb_pins": {
+        "red": 17,
+        "green": 22,
+        "blue": 24
+    },
     "sounds": {
         "power_on": "/home/domin/JARVIS/sounds/powerup1.mp3",
         "unauthorized": [
